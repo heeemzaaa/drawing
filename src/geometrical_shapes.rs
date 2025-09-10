@@ -49,7 +49,6 @@ pub struct Point {
 pub struct Line {
     pub p1: Point,
     pub p2: Point,
-    pub color: Color,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -89,7 +88,6 @@ impl Line {
         Self {
             p1,
             p2,
-            color: Color::white(),
         }
     }
 
