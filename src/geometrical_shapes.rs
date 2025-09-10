@@ -2,6 +2,25 @@ use rand::prelude::*;
 use raster::{Color, Image};
 use std::f64::consts::PI;
 
+pub fn draw_line(image: &mut Image, p1: Point, p2: Point, color: Color) {
+    let dx: f64 = (p2.x - p1.x) as f64;
+    let dy: f64 = (p2.y - p1.y) as f64;
+
+    let steps: usize = dx.abs().max(dy.abs()) as usize;
+
+    let x_inc: f64 = dx / steps as f64;
+    let y_inc: f64 = dy / steps as f64;
+
+    let mut x: f64 = p1.x as f64;
+    let mut y: f64 = p1.y as f64;
+
+    for _ in 0..=steps {
+        image.display(x as i32, y as i32, color.clone());
+        x += x_inc;
+        y += y_inc;
+    }
+}
+
 pub trait Drawable {
     fn draw(&self, image: &mut Image);
     fn color() -> Color {
@@ -26,10 +45,11 @@ pub struct Point {
     pub y: i32,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub struct Line {
     pub p1: Point,
     pub p2: Point,
+    pub color: Color,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -66,7 +86,11 @@ impl Point {
 
 impl Line {
     pub fn new(p1: Point, p2: Point) -> Self {
-        Self { p1, p2 }
+        Self {
+            p1,
+            p2,
+            color: Color::white(),
+        }
     }
 
     pub fn random(width: i32, height: i32) -> Self {
@@ -119,48 +143,37 @@ impl Circle {
 
 impl Drawable for Point {
     fn draw(&self, image: &mut Image) {
-        image.display(self.x, self.y, Color::white())
+        image.display(self.x, self.y, Self::color());
     }
 }
 
 impl Drawable for Line {
     fn draw(&self, image: &mut Image) {
-    let dx: f64 = (self.p2.x - self.p1.x) as f64;
-    let dy: f64 = (self.p2.y - self.p1.y) as f64;
-
-    let steps: usize = dx.abs().max(dy.abs()) as usize;
-
-    let x_inc: f64 = dx / steps as f64;
-    let y_inc: f64 = dy / steps as f64;
-
-    let mut x: f64 = self.p1.x as f64;
-    let mut y: f64 = self.p1.y as f64;
-
-    for _ in 0..=steps {
-        image.display(x as i32, y as i32, Color::white());
-        x += x_inc;
-        y += y_inc;
+        let color = Self::color();
+        draw_line(image, self.p1.clone(), self.p2.clone(), color);
     }
-}
 }
 
 impl Drawable for Rectangle {
     fn draw(&self, image: &mut Image) {
-        let p3 = Point::new(self.p1.x, self.p2.y);
-        let p4 = Point::new(self.p2.x, self.p1.y);
+        let p3: Point = Point::new(self.p1.x, self.p2.y);
+        let p4: Point = Point::new(self.p2.x, self.p1.y);
+        let color = Self::color();
 
-        Line::new(self.p1.clone(), p3.clone()).draw(image);
-        Line::new(p3.clone(), self.p2.clone()).draw(image);
-        Line::new(self.p2.clone(), p4.clone()).draw(image);
-        Line::new(p4.clone(), self.p1.clone()).draw(image);
+        draw_line(image, self.p1.clone(), p3.clone(), color.clone());
+        draw_line(image, p3.clone(), self.p2.clone(), color.clone());
+        draw_line(image, self.p2.clone(), p4.clone(), color.clone());
+        draw_line(image, p4.clone(), self.p1.clone(), color.clone());
     }
 }
 
 impl Drawable for Triangle {
     fn draw(&self, image: &mut Image) {
-        Line::new(self.p1.clone(), self.p2.clone()).draw(image);
-        Line::new(self.p1.clone(), self.p3.clone()).draw(image);
-        Line::new(self.p2.clone(), self.p3.clone()).draw(image);
+        let color = Self::color();
+
+        draw_line(image, self.p1.clone(), self.p2.clone(), color.clone());
+        draw_line(image, self.p1.clone(), self.p3.clone(), color.clone());
+        draw_line(image, self.p2.clone(), self.p3.clone(), color.clone());
     }
 }
 
@@ -178,3 +191,5 @@ impl Drawable for Circle {
         }
     }
 }
+
+
